@@ -63,13 +63,13 @@ namespace DynamicExternalResolution
         private static readonly FieldInfo _graphicsField;
         private static readonly FieldInfo _graphicsSettingsField;
         private static readonly PropertyInfo _dlssEnabledProperty;
-        private static readonly PropertyInfo _fsrEnabledProperty;
         private static readonly PropertyInfo _fsr2EnabledProperty;
+        private static readonly PropertyInfo _fsr3EnabledProperty;
         private static readonly PropertyInfo _superSamplingFactorProperty;
         private static readonly FieldInfo _antiAliasingField;
         private static readonly FieldInfo _dlssModeField;
-        private static readonly FieldInfo _fsrModeField;
         private static readonly FieldInfo _fsr2ModeField;
+        private static readonly FieldInfo _fsr3ModeField;
 
         private static readonly PropertyInfo _isAimingProperty;
         private static readonly PropertyInfo _currentAimingModProperty;
@@ -91,13 +91,13 @@ namespace DynamicExternalResolution
 
             // Singleton<SharedGameSettingsClass>.Instance.Graphics.Settings properties
             _dlssEnabledProperty = AccessTools.Property(graphicsSettingsFieldType, "DLSSEnabled");
-            _fsrEnabledProperty = AccessTools.Property(graphicsSettingsFieldType, "FSREnabled");
             _fsr2EnabledProperty = AccessTools.Property(graphicsSettingsFieldType, "FSR2Enabled");
+            _fsr3EnabledProperty = AccessTools.Property(graphicsSettingsFieldType, "FSR3Enabled");
             _superSamplingFactorProperty = AccessTools.Property(graphicsSettingsFieldType, "SuperSamplingFactor");
             _antiAliasingField = AccessTools.Field(graphicsSettingsFieldType, "AntiAliasing");
             _dlssModeField = AccessTools.Field(graphicsSettingsFieldType, "DLSSMode");
-            _fsrModeField = AccessTools.Field(graphicsSettingsFieldType, "FSRMode");
             _fsr2ModeField = AccessTools.Field(graphicsSettingsFieldType, "FSR2Mode");
+            _fsr3ModeField = AccessTools.Field(graphicsSettingsFieldType, "FSR3Mode");
 
             // ProceduralWeaponAnimation properties
             Type procWeaponAnimType = typeof(ProceduralWeaponAnimation);
@@ -116,8 +116,8 @@ namespace DynamicExternalResolution
             object graphicsSettings = _graphicsSettingsField.GetValue(graphics);
 
             bool DLSSEnabled = DLSSSupport && (bool)_dlssEnabledProperty.GetValue(graphicsSettings);
-            bool FSREnabled = (bool)_fsrEnabledProperty.GetValue(graphicsSettings);
             bool FSR2Enabled = (bool)_fsr2EnabledProperty.GetValue(graphicsSettings);
+            bool FSR3Enabled = (bool)_fsr3EnabledProperty.GetValue(graphicsSettings);
 
             float defaultSuperSamplingFactor = (float)_superSamplingFactorProperty.GetValue(graphicsSettings);
             float configSuperSamplingFactor = DynamicExternalResolutionConfig.SuperSampling.Value;
@@ -127,31 +127,31 @@ namespace DynamicExternalResolution
             EDLSSMode defaultDLSSMode = GetGameSetting<EDLSSMode>(graphicsSettings, _dlssModeField);
             EDLSSMode configDLSSMode = DynamicExternalResolutionConfig.DLSSMode.Value;
 
-            EFSRMode defaultFSRMode = GetGameSetting<EFSRMode>(graphicsSettings, _fsrModeField);
-            EFSRMode configFSRMode = DynamicExternalResolutionConfig.FSRMode.Value;
-
             EFSR2Mode defaultFSR2Mode = GetGameSetting<EFSR2Mode>(graphicsSettings, _fsr2ModeField);
             EFSR2Mode configFSR2Mode = DynamicExternalResolutionConfig.FSR2Mode.Value;
 
+            EFSR3Mode defaultFSR3Mode = GetGameSetting<EFSR3Mode>(graphicsSettings, _fsr3ModeField);
+            EFSR3Mode configFSR3Mode = DynamicExternalResolutionConfig.FSR3Mode.Value;
+
             // DLSS and FSR1|2 are both disabled, use the default sampling factor
-            if (!DLSSEnabled && !FSREnabled && !FSR2Enabled && (configSuperSamplingFactor < defaultSuperSamplingFactor))
+            if (!DLSSEnabled && !FSR2Enabled && !FSR3Enabled && (configSuperSamplingFactor < defaultSuperSamplingFactor))
             {
                 SetSuperSampling(1f - configSuperSamplingFactor);
             }
             // DLSS is enabled, and the selected scale mode doesn't match
             else if (DLSSEnabled && (configDLSSMode != defaultDLSSMode))
             {
-                SetAntiAliasing(defaultAAMode, configDLSSMode, defaultFSR2Mode);
-            }
-            // FSR1 is enabled, and the configured scale mode doesn't match
-            else if (FSREnabled && (configFSRMode != defaultFSRMode))
-            {
-                SetFSR(configFSRMode);
+                SetAntiAliasing(defaultAAMode, configDLSSMode, defaultFSR2Mode, defaultFSR3Mode);
             }
             // FSR2 is enabled, and the configured scale mode doesn't match
             else if (FSR2Enabled && (configFSR2Mode != defaultFSR2Mode))
             {
                 SetFSR2(configFSR2Mode);
+            }
+            // FSR3 is enabled, and the configured scale mode doesn't match
+            else if (FSR3Enabled && (configFSR2Mode != defaultFSR2Mode))
+            {
+                SetFSR3(configFSR3Mode);
             }
         }
 
@@ -163,31 +163,31 @@ namespace DynamicExternalResolution
             object graphicsSettings = _graphicsSettingsField.GetValue(graphics);
 
             bool DLSSEnabled = DLSSSupport && (bool)_dlssEnabledProperty.GetValue(graphicsSettings);
-            bool FSREnabled = (bool)_fsrEnabledProperty.GetValue(graphicsSettings);
             bool FSR2Enabled = (bool)_fsr2EnabledProperty.GetValue(graphicsSettings);
+            bool FSR3Enabled = (bool)_fsr3EnabledProperty.GetValue(graphicsSettings);
 
             float defaultSuperSamplingFactor = (float)_superSamplingFactorProperty.GetValue(graphicsSettings);
 
             EAntialiasingMode defaultAAMode = GetGameSetting<EAntialiasingMode>(graphicsSettings, _antiAliasingField);
             EDLSSMode defaultDLSSMode = GetGameSetting<EDLSSMode>(graphicsSettings, _dlssModeField);
-            EFSRMode defaultFSRMode = GetGameSetting<EFSRMode>(graphicsSettings, _fsrModeField);
             EFSR2Mode defaultFSR2Mode = GetGameSetting<EFSR2Mode>(graphicsSettings, _fsr2ModeField);
+            EFSR3Mode defaultFSR3Mode = GetGameSetting<EFSR3Mode>(graphicsSettings, _fsr3ModeField);
 
-            if (!DLSSEnabled && !FSREnabled && !FSR2Enabled)
+            if (!DLSSEnabled && !FSR2Enabled && !FSR3Enabled)
             {
                 SetSuperSampling(defaultSuperSamplingFactor);
             }
             else if (DLSSEnabled)
             {
-                SetAntiAliasing(defaultAAMode, defaultDLSSMode, defaultFSR2Mode);
-            }
-            else if (FSREnabled)
-            {
-                SetFSR(defaultFSRMode);
+                SetAntiAliasing(defaultAAMode, defaultDLSSMode, defaultFSR2Mode, defaultFSR3Mode);
             }
             else if (FSR2Enabled)
             {
                 SetFSR2(defaultFSR2Mode);
+            }
+            else if (FSR3Enabled)
+            {
+                SetFSR3(defaultFSR3Mode);
             }
         }
 
@@ -207,23 +207,13 @@ namespace DynamicExternalResolution
             }
         }
 
-        private static void SetAntiAliasing(EAntialiasingMode quality, EDLSSMode dlssMode, EFSR2Mode fsr2Mode)
+        private static void SetAntiAliasing(EAntialiasingMode quality, EDLSSMode dlssMode, EFSR2Mode fsr2Mode, EFSR3Mode fsr3Mode)
         {
             CameraClass camera = DynamicExternalResolution.getCameraInstance();
 
             if (camera != null)
             {
-                camera.SetAntiAliasing(quality, dlssMode, fsr2Mode);
-            }
-        }
-
-        private static void SetFSR(EFSRMode fsrMode)
-        {
-            CameraClass camera = DynamicExternalResolution.getCameraInstance();
-
-            if (camera != null)
-            {
-                camera.SetFSR(fsrMode);
+                camera.SetAntiAliasing(quality, dlssMode, fsr2Mode, fsr3Mode);
             }
         }
 
@@ -234,6 +224,15 @@ namespace DynamicExternalResolution
             if (camera != null)
             {
                 camera.SetFSR2(fsr2Mode);
+            }
+        }
+        private static void SetFSR3(EFSR3Mode fsr3Mode)
+        {
+            CameraClass camera = DynamicExternalResolution.getCameraInstance();
+
+            if (camera != null)
+            {
+                camera.SetFSR3(fsr3Mode);
             }
         }
 
