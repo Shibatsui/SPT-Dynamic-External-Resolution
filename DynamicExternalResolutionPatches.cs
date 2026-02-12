@@ -149,7 +149,7 @@ namespace DynamicExternalResolution
                 SetFSR2(configFSR2Mode);
             }
             // FSR3 is enabled, and the configured scale mode doesn't match
-            else if (FSR3Enabled && (configFSR2Mode != defaultFSR2Mode))
+            else if (FSR3Enabled && (configFSR3Mode != defaultFSR3Mode))
             {
                 SetFSR3(configFSR3Mode);
             }
