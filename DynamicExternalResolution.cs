@@ -2,6 +2,7 @@
 using Comfort.Common;
 using DynamicExternalResolution.Configs;
 using EFT;
+using EFT.CameraControl;
 
 namespace DynamicExternalResolution
 {
@@ -21,9 +22,9 @@ namespace DynamicExternalResolution
             return _localPlayer;
         }
 
-        public static CameraClass getCameraInstance()
+        public static CameraManager getCameraInstance()
         {
-            return CameraClass.Instance;
+            return CameraManager.Instance;
         }
 
         private void Awake()

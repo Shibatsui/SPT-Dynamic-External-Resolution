@@ -8,6 +8,7 @@ using DynamicExternalResolution.Configs;
 using EFT;
 using EFT.Animations;
 using EFT.CameraControl;
+using EFT.Settings;
 using EFT.Settings.Graphics;
 using HarmonyLib;
 using UnityEngine;
@@ -79,7 +80,7 @@ namespace DynamicExternalResolution
         // Fetch field/property references to avoid GClass references
         static DynamicExternalResolutionPatches()
         {
-            Type gameSettingsType = typeof(SharedGameSettingsClass);
+            Type gameSettingsType = typeof(SettingsManager);
 
             // Singleton<SharedGameSettingsClass>.Instance.Graphics
             _graphicsField = AccessTools.Field(gameSettingsType, "Graphics");
@@ -112,7 +113,7 @@ namespace DynamicExternalResolution
         {
             bool DLSSSupport = DLSSWrapper.IsDLSSSupported();
 
-            object graphics = _graphicsField.GetValue(Singleton<SharedGameSettingsClass>.Instance);
+            object graphics = _graphicsField.GetValue(Singleton<SettingsManager>.Instance);
             object graphicsSettings = _graphicsSettingsField.GetValue(graphics);
 
             bool DLSSEnabled = DLSSSupport && (bool)_dlssEnabledProperty.GetValue(graphicsSettings);
@@ -159,7 +160,7 @@ namespace DynamicExternalResolution
         {
             bool DLSSSupport = DLSSWrapper.IsDLSSSupported();
 
-            object graphics = _graphicsField.GetValue(Singleton<SharedGameSettingsClass>.Instance);
+            object graphics = _graphicsField.GetValue(Singleton<SettingsManager>.Instance);
             object graphicsSettings = _graphicsSettingsField.GetValue(graphics);
 
             bool DLSSEnabled = DLSSSupport && (bool)_dlssEnabledProperty.GetValue(graphicsSettings);
@@ -198,7 +199,7 @@ namespace DynamicExternalResolution
 
         private static void SetSuperSampling(float sampling)
         {
-            CameraClass camera = DynamicExternalResolution.getCameraInstance();
+            CameraManager camera = DynamicExternalResolution.getCameraInstance();
 
             if (camera != null)
             {
@@ -209,7 +210,7 @@ namespace DynamicExternalResolution
 
         private static void SetAntiAliasing(EAntialiasingMode quality, EDLSSMode dlssMode, EFSR2Mode fsr2Mode, EFSR3Mode fsr3Mode)
         {
-            CameraClass camera = DynamicExternalResolution.getCameraInstance();
+            CameraManager camera = DynamicExternalResolution.getCameraInstance();
 
             if (camera != null)
             {
@@ -219,7 +220,7 @@ namespace DynamicExternalResolution
 
         private static void SetFSR2(EFSR2Mode fsr2Mode)
         {
-            CameraClass camera = DynamicExternalResolution.getCameraInstance();
+            CameraManager camera = DynamicExternalResolution.getCameraInstance();
 
             if (camera != null)
             {
@@ -228,7 +229,7 @@ namespace DynamicExternalResolution
         }
         private static void SetFSR3(EFSR3Mode fsr3Mode)
         {
-            CameraClass camera = DynamicExternalResolution.getCameraInstance();
+            CameraManager camera = DynamicExternalResolution.getCameraInstance();
 
             if (camera != null)
             {
